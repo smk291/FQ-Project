@@ -1,8 +1,54 @@
-html,
-body,
+
 #map-canvas {
-  height: 100%;
-  width: 100%;
+  min-width: 600x;
+  width: 100vw;
+  min-height: 600px;
+  height: 100vh;
+  display: inline-block;
   margin: 0px;
-  padding: 0px
+  padding: 0px;
+}
+
+#sidemenu, #main {
+  display: inline;
+}
+
+#side-menu{
+  position: absolute;
+  right: .5%;
+  top: 1%;
+  z-index: 9999;
+  width: 31.5%;
+  height: 98%;
+  background-color: white;
+}
+
+#buttonholder, #search {
+  margin: 0px;
+  position: relative;
+  padding: 0px;
+  width: 50px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#weatherlisting{
+  overflow-y: scroll !important;
+  height: 60%;
+}
+
+.alisting, .time, .probability, .precipIntensity {
+  position: relative;
+  height: 1em;
+  margin: 0px;
+  padding; 0px;
+}
+
+.flex-container {
+    display:flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: flex-start;
+    align-items: flex-start;
 }
