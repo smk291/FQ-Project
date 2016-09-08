@@ -197,3 +197,81 @@ https://maps.googleapis.com/maps/api/distancematrix/json?origins=...&destination
 .results[0].address_components[1].long_name;
 .results[0].address_components[3].long_name;
 .results[0].address_components[7].long_name;
+
+
+// $geocode = $.getJSON('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitudes[j] + ',' + longitudes[j] + '&sensor=false')
+// $geocode.done(function(data){                                                           // API call to retrieve human-readable address for lat,lng
+// if ($geocode.status !== 200) {                                                        // console.log('Houston, we have an error.')
+//     return;
+// for (var k = 0; k < data.results[0].address_components[0].short_name.length; k++){      // >>>>>>>>>>>>>>>>>> This converets to human readable address
+// console.log(data.results[0].address_components[k].short_name);
+// }
+// })
+
+for (var j = 0; j < latitudes.length; j++) {
+  // $geocode = $.getJSON('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitudes[j] + ',' + longitudes[j] + '&sensor=false')
+  // $geocode.done(function(data){                                                           // API call to retrieve human-readable address for lat,lng
+  // if ($geocode.status !== 200) {                                                        // console.log('Houston, we have an error.')
+  //     return;
+  // for (var k = 0; k < data.results[0].address_components[0].short_name.length; k++){      // >>>>>>>>>>>>>>>>>> This converets to human readable address
+  // console.log(data.results[0].address_components[k].short_name);
+  // }
+  // })
+}
+
+before latitudes[i]/longitude[i]
+
+// console.log("distanceBetween: "  + distanceBetween) totalDistance += distanceBetween; console.log("totalDistance: " + totalDistance); Assume walk speed of 3.1 mph, 4.546667 ft/sec, 272.80002 ft/min 272.80002 ---> 545.6004
+if ((distanceBetween + distanceStorage) > 545.6004 || i === 0 || i === latitudes.length - 1) {
+
+// console.log(i);// Show latitudes and longitudes
+// console.log(latitudes[i] + "," + longitudes[i]);
+// console.log(earthDistance({lat: latitudes[i], lon: longitudes[i]},{lat: latitudes[i + 1], lon: longitudes[i + 1]}))
+// var goingTheDistance = earthDistance({lat: latitudes[i], lon: longitudes[i]},{lat: latitudes[i + 1], lon: longitudes[i + 1]});
+// goingTheDistance = goingTheDistance * 5280;
+// console.log(goingTheDistance);
+// totalDistance += goingTheDistance;
+// console.log(totalDistance);
+// console.log(totalDistance / 5280);
+// console.log("Distancestorage: " + distanceStorage);
+var distanceBetween = earthDistance({
+
+
+// console.log("Click event at: ");
+// console.log(latLng);
+// console.log("Lat: ");
+// console.log(latLng.lat(arguments));
+// console.log("Lng: ");
+// console.log(latLng.lng(arguments));
+
+if (clickCount === 0) { // Shitty, non-working attempt to take coordinates from mouseclick
+
+
+
+// if (place.address_components) {
+//   address = [
+//     (place.address_components[0] && place.address_components[0].short_name || ''),
+//     (place.address_components[1] && place.address_components[1].short_name || ''),
+//     (place.address_components[2] && place.address_components[2].short_name || '')
+//   ].join(' ');
+// }
+
+// function setupClickListener(id, types) {
+//   var radioButton = document.getElementById(id);
+//   radioButton.addEventListener('click', function() {
+//     autocomplete.setTypes(types);
+//   });
+
+// <div id="type-selector" class="controls">
+//     <input type="radio" name="type" id="changetype-all" checked="checked">
+//     <label for="changetype-all">All</label>
+//
+//     <input type="radio" name="type" id="changetype-establishment">
+//     <label for="changetype-establishment">Establishments</label>
+//
+//     <input type="radio" name="type" id="changetype-address">
+//     <label for="changetype-address">Addresses</label>
+//
+//     <input type="radio" name="type" id="changetype-geocode">
+//     <label for="changetype-geocode">Geocodes</label>
+//   </div>

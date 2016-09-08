@@ -12,12 +12,41 @@
 
 <body>
 
-  <input id="origin" class="controls" type="text" placeholder="Enter your origin">
+
   <input id="destination" class="controls" type="text" placeholder="Enter your destination">
+
+  <!-- <div id="type-selector" class="controls">
+    <input type="radio" name="type" id="changetype-all" checked="checked">
+    <label for="changetype-all">All</label>
+
+    <input type="radio" name="type" id="changetype-establishment">
+    <label for="changetype-establishment">Establishments</label>
+
+    <input type="radio" name="type" id="changetype-address">
+    <label for="changetype-address">Addresses</label>
+
+    <input type="radio" name="type" id="changetype-geocode">
+    <label for="changetype-geocode">Geocodes</label>
+  </div> -->
 
   <div id="map-canvas"></div>
 
   <div id="side-menu" class="container row z-depth-3">
+    <div class="col l12">
+      <div class="row">
+        <form class="col l12">
+          <div class="row">
+            <div id="col l5">
+              <input id="origin" class="controls" type="text" placeholder="Enter your origin">
+            </div>
+          <div class="col l2" id="buttonholder" class="flex-container">
+            <div id="search">
+            </div>
+          </div>
+          </div>
+        </form>
+      </div>
+    </div>
     <div class="col l12 row container" id="weatherlisting">
     </div>
   </div>
