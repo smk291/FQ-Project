@@ -46,10 +46,19 @@ html, body{
   margin-bottom: 10px;
 }
 
-#weatherlisting, #hourlyForecast, #currentconditions, #dailyForecast {
+#hourlyForecast, #currentconditions, #dailyForecast {
   position: absolute;
-  overflow: scroll !important;
+  overflow: scroll;
   height: 50%;
+  display: block;
+  border-bottom: 1px rgba(0, 0, 0, 0.3) solid;
+  font-size: 12px;
+}
+
+#weatherlisting {
+  position: absolute;
+  overflow: scroll;
+  height: 30%;
   display: block;
   border-bottom: 1px rgba(0, 0, 0, 0.3) solid;
   font-size: 12px;
@@ -191,11 +200,11 @@ td {
   opacity: 0.6;
 }
 
-.card-panel{
+.card-content{
   overflow:hidden;
 }
 
-.card-panel>img{
+.card-content>img{
   bottom: 58%;
   right: 0%;
   position: absolute;

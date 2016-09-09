@@ -14,14 +14,13 @@ var $xhrdata = {};
 var skyconCounter = 0;
 var modeOfTransport = "WALKING";
 
-
 $(function () {
   $('.modal-trigger').leanModal({
-  dismissible: true,
-  opacity: .5,
-  in_duration: 300,
-  out_duration: 200,
-});
+    dismissible: true,
+    opacity: .5,
+    in_duration: 300,
+    out_duration: 200,
+  });
 
   $('#searchbutton').on('click', function () {
     event.preventDefault();
@@ -62,13 +61,11 @@ $(function () {
   }
 
   function initialize() { //  ---->  This is the function that generates map and directions
-    ;
     $('#currentconditions').empty();
     $('#weatherlisting').empty();
     $('#hourlyForecast').empty();
 
     var mapOptions = { // Sets initial conditions for map
-
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         center: {
           lat: 47.59916,
@@ -85,20 +82,34 @@ $(function () {
 
   function calcRoute() { // ----> This calculates the route using user-selected addresses
 
-    var request = {
-      origin: coordinates[0],
-      destination: coordinates[1],
-      travelMode: google.maps.TravelMode.WALKING //                             >>>>>>>>>>> SET OPTION
-    };
-
     var transportChoices = document.getElementsByName('transport')
-    for (var i = 0; i < transportChoices.length; i++){
-      if (transportChoices[i].checked){
-        modeOfTransport = transportChoices[i];
+    for (var i = 0; i < transportChoices.length; i++) {
+      if (transportChoices[i].checked) {
+        modeOfTransport = transportChoices[i].id;
         console.log(transportChoices[i]);
         console.log(modeOfTransport);
         break;
       }
+    }
+
+    if (modeOfTransport === "WALKING") {
+      var request = {
+        origin: coordinates[0],
+        destination: coordinates[1],
+        travelMode: google.maps.TravelMode.WALKING //                             >>>>>>>>>>> SET OPTION
+      };
+    } else if (modeOfTransport === "BICYCLING") {
+      var request = {
+        origin: coordinates[0],
+        destination: coordinates[1],
+        travelMode: google.maps.TravelMode.BICYCLING //                             >>>>>>>>>>> SET OPTION
+      }
+    } else if (modeOfTransport === "DRIVING") {
+      var request = {
+        origin: coordinates[0],
+        destination: coordinates[1],
+        travelMode: google.maps.TravelMode.WALKING //                             >>>>>>>>>>> SET OPTION
+      };
     }
 
     // if (modeOf)
@@ -106,7 +117,7 @@ $(function () {
     directionsService.route(request, function (response, status) {
       if (status == google.maps.DirectionsStatus.OK) {
         map.fitBounds(response.routes[0].bounds);
-        createPolyline(response);
+        createPolyline(response, modeOfTransport);
       }
       var newLatCenter = (map.getBounds().f.b + map.getBounds().f.f) / 2;
       var newLngCenter = Math.max(map.getBounds().b.f, map.getBounds().b.b) - Math.abs((map.getBounds().b.f - map.getBounds().b.b) / 2.85);
@@ -117,7 +128,7 @@ $(function () {
     });
   }
 
-  function createPolyline(directionResult) { // ----> This function creates polyLines
+  function createPolyline(directionResult, modeOfTransport) { // ----> This function creates polyLines
     ;
     latitudes = []; // Array storing list of latitudes
     longitudes = []; // Array storing list of all longitudes -- equal in length to latitude list // console.log(directionResult.routes[0].overview_path) // console.log(directionResult.routes)
@@ -139,7 +150,7 @@ $(function () {
     directionsCenterLatitude = (latitudes[0] + latitudes[latitudes.length - 1]) / 2; // Store average of start latitude and end latitude
     directionsCenterLongitude = (longitudes[0] + longitudes[longitudes.length - 1]) / 2; //Store average of start longitude and end longitude
 
-    markersAndForecast(line, directionsCenterLatitude, directionsCenterLongitude)
+    markersAndForecast(line, directionsCenterLatitude, directionsCenterLongitude, modeOfTransport)
   }
 
   function showSteps(directionResult, markerArray, stepDisplay, map) { // ----> Put markers on map
@@ -178,20 +189,19 @@ $(function () {
 })
 
 function whereToMark(line, xhrdata, modeOfTransport) {
-  ;
+  console.log(modeOfTransport);
   var totalDistance = 0;
   var minuteCount = 0;
   var distanceStorage = 0;
   var distancePerMinute = 0;
-  if (modeOfTransport === "WALKING"){
 
-  } else if (distancePerMinute === "BICYCLING"){
+  if (modeOfTransport === "WALKING") {
+    distancePerMinute = 272.8002;
+  } else if (modeOfTransport === "BICYCLING") {
     distancePerMinute = 660;
-  } else {
+  } else if (modeOfTransport === "DRIVING"){
     distancePerMinute = 1320;
   }
-
-    distancePerMinute = 272.8002;
 
   var ul = document.createElement('ul');
   ul.className = "collection";
@@ -209,16 +219,15 @@ function whereToMark(line, xhrdata, modeOfTransport) {
     if (i === latitudes.length - 1) {
       distanceBetween = 0;
     }
-    if ((distanceBetween + distanceStorage) > (distancePerMinute) || i === 0 || i === latitudes.length - 1) {
-      if ((distanceBetween + distanceStorage) > (distancePerMinute)) {
-        distanceStorage = 0; // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIX THIS WHOLE IF/ELSE
+    if ((distanceStorage) > (distancePerMinute) || i === 0 || i === latitudes.length - 1) {
+      if ((distanceStorage) > (distancePerMinute)) {
+        // distanceStorage = 0; // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIX THIS WHOLE IF/ELSE
+        distanceStorage = distanceStorage % (distancePerMinute);
       } else {
         distanceStorage += distanceBetween;
       }
       minuteCount = Math.round(totalDistance / (distancePerMinute));
       totalDistance += distanceBetween;
-      distanceStorage = distanceStorage % (distancePerMinute);
-
       createMarkers(xhrdata, minuteCount, line, i)
       fetchAndAppendData(xhrdata, minuteCount, latitudes[i], longitudes[i], ul);
     } else {
@@ -229,8 +238,7 @@ function whereToMark(line, xhrdata, modeOfTransport) {
   $('#weatherlisting').append(ul);
 }
 
-function createMarkers(xhrdata, minuteCount, line, i) {
-  ;
+function createMarkers(xhrdata, minuteCount, line, i) {;
   var marker = new google.maps.Marker({ // Create marker when distanceStorage exceeds 272.80002
     icon: {
       path: google.maps.SymbolPath.CIRCLE,
@@ -242,8 +250,7 @@ function createMarkers(xhrdata, minuteCount, line, i) {
   });
 }
 
-function fetchAndAppendData(xhrdata, minuteCount, latitude, longitude, ul) {
-  ;
+function fetchAndAppendData(xhrdata, minuteCount, latitude, longitude, ul) {;
   var li = document.createElement('li');
   li.className = 'alisting collection-item row container col l12';
 
@@ -283,7 +290,6 @@ function fetchAndAppendData(xhrdata, minuteCount, latitude, longitude, ul) {
 
   var probabilityArray = [];
   var precipIntensityArray = [];
-
 
   var div2 = document.createElement('div');
   var p2 = document.createElement('p');
@@ -337,7 +343,7 @@ function fetchAndAppendData(xhrdata, minuteCount, latitude, longitude, ul) {
       address = data.results[0].address_components[k].short_name;
       p4.textContent += address + " ";
       span.appendChild(p4)
-      // span2.textContent = probabilityInWords;
+        // span2.textContent = probabilityInWords;
       li.appendChild(span2);
     }
     // probabilityInWords += " around " + p4.textContent + ".";
@@ -349,8 +355,7 @@ function fetchAndAppendData(xhrdata, minuteCount, latitude, longitude, ul) {
   // console.log(probabilityInWords);
 }
 
-function appendSummary(xhrdata) {
-  ;
+function appendSummary(xhrdata) {;
   var icons = new Skycons({
     "color": "black"
   });
@@ -416,8 +421,7 @@ function appendSummary(xhrdata) {
 
 }
 
-function earthDistance(coord1, coord2) {
-  ;
+function earthDistance(coord1, coord2) {;
   var RADIUS_OF_EARTH = 3961; // miles
   var lat1 = coord1.lat * Math.PI / 180;
   var lat2 = coord2.lat * Math.PI / 180;
@@ -437,23 +441,22 @@ function earthDistance(coord1, coord2) {
 // navigator.geolocation.watchPosition(function (position) {
 //   map = new google.maps.Map(document.getElementById('map-canvas'), { // This creates the initial map
 //     center: {
-//       lat: 47.607081,
-//       lng: -122.315724
+//       lat: position.coords.latitude,
+//       lng: position.coords.longitude
 //     },
 //     disableDefaultUI: true,
 //     zoom: 12
 //   });
 // })
 
-
-  map = new google.maps.Map(document.getElementById('map-canvas'), { // This creates the initial map
-    center: {
-      lat: 47.59916,
-      lng: -122.263689
-    },
-    disableDefaultUI: true,
-    zoom: 12
-  });
+map = new google.maps.Map(document.getElementById('map-canvas'), { // This creates the initial map
+  center: {
+    lat: 47.59916,
+    lng: -122.263689
+  },
+  disableDefaultUI: true,
+  zoom: 12
+});
 
 $(document).ready(function () {
   $('ul.tabs').tabs();
@@ -467,15 +470,10 @@ $(document).ready(function () {
 //   newCanvas.style.width = skyconWidth;
 //   newCanvas.style.height = skyconHeight;
 //   return newCanvas;
-// }
-//
 // function createSkycon (id, skyconColor, icon){
 //   var skycons = new Skycons({"color": skyconColor});
 //   skycons.add(document.getElementById(id), Skycons.icon)
-// }
-
 // var icons = new Skycons({"color": "black"});
-//
 // icons.set("clear-day", Skycons.CLEAR_DAY);
 // // icons.set("clear-night", Skycons.CLEAR_NIGHT);
 // // icons.set("partly-cloudy-day", Skycons.PARTLY_CLOUDY_DAY);
@@ -486,9 +484,7 @@ $(document).ready(function () {
 // // icons.set("snow", Skycons.SNOW);
 // // icons.set("wind", Skycons.WIND);
 // // icons.set("fog", Skycons.FOG);
-// //
 // icons.play();
-
 // var newFigure = document.createElement('figure');
 // newFigure.className = "icons";
 // var newCanvas = document.createElement('canvas');
@@ -499,7 +495,6 @@ $(document).ready(function () {
 // newCanvas.style.height = '128px';
 // newFigure.appendChild(newCanvas);
 // document.getElementById('currentconditions').appendChild(newFigure);
-//
 // var skycons = new Skycons({"color": "pink"});
 // var skycon = xhrdata.currently.icon;
 // skycon = skycon.toUpperCase().replace("-","_");
@@ -507,15 +502,14 @@ $(document).ready(function () {
 // skycons.add(newId, Skycons.skycon);
 // skycons.play();
 
-function createHourlyChart(xhrdata) {
-  ;
+function createHourlyChart(xhrdata) {;
   var table1 = document.createElement('table');
   table1.className = "highlight hourlyData";
   var thead = document.createElement('thead');
   var trhead = document.createElement('tr');
   var keys = ["time", "summary", "precipProbability", "temperature", "cloudCover"]
   var th = document.createElement('th');
-  for (var j = 0; i < keys.length; j++){
+  for (var j = 0; i < keys.length; j++) {
     th.textContent = key
     trhead.appendChild(th);
     thead.appendChild(trhead);
@@ -534,7 +528,7 @@ function createHourlyChart(xhrdata) {
       } else if (keys.indexOf(key) !== -1) {
         td.textContent = xhrdata.hourly.data[i][key];
       }
-        tr.appendChild(td);
+      tr.appendChild(td);
     }
     tbody.appendChild(tr);
   }
@@ -542,9 +536,7 @@ function createHourlyChart(xhrdata) {
   document.getElementById('hourlyForecast').appendChild(table1);
 }
 
-
-function createDailyChart(xhrdata) {
-  ;
+function createDailyChart(xhrdata) {;
   var summaryDiv = document.createElement('div');
   var p = document.createElement('p')
   var table1 = document.createElement('table');
@@ -559,7 +551,7 @@ function createDailyChart(xhrdata) {
   // var keys = ["time", "summary", "precipProbability", "temperature", "cloudCover", "temperatureMin", "temperatureMinTime", "temperatureMax"]
   var keys = ["time", "summary", "precipProbability", "temperature", "temperatureMin", "temperatureMax"]
   var th = document.createElement('th');
-  for (var j = 0; i < keys.length; j++){
+  for (var j = 0; i < keys.length; j++) {
     th.textContent = key
     trhead.appendChild(th);
     thead.appendChild(trhead);
@@ -577,7 +569,7 @@ function createDailyChart(xhrdata) {
       } else if (keys.indexOf(key) !== -1) {
         td.textContent = xhrdata.daily.data[i][key];
       }
-        tr.appendChild(td);
+      tr.appendChild(td);
     }
     tbody.appendChild(tr);
   }
@@ -585,67 +577,39 @@ function createDailyChart(xhrdata) {
   document.getElementById('dailyForecast').appendChild(table1);
 }
 
+function init(latitude, longitude) {;
+  // Center  ( mercator coordinates )
+  var lat = merc_x(longitude);
+  var lon = merc_y(latitude);
 
-function init(latitude, longitude) {
-  ;
-	// Center  ( mercator coordinates )
-	var lat = merc_x(longitude);
-	var lon = merc_y(latitude);
+  // if  you use WGS 1984 coordinate you should  convert to mercator
+  //	lonlat.transform(
+  //		new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+  //		new OpenLayers.Projection("EPSG:900913") // to Spherical Mercator Projection
+  //	);
 
-// if  you use WGS 1984 coordinate you should  convert to mercator
-//	lonlat.transform(
-//		new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
-//		new OpenLayers.Projection("EPSG:900913") // to Spherical Mercator Projection
-//	);
+  var lonlat = new OpenLayers.LonLat(lon, lat);
 
-	var lonlat = new OpenLayers.LonLat(lon, lat);
+  weathermap = new OpenLayers.Map("basicMap");
 
-        weathermap = new OpenLayers.Map("basicMap");
+  // Create overlays
+  // map layer OSM
+  var mapnik = new OpenLayers.Layer.OSM();
+  // Create station layer
+  var stations = new OpenLayers.Layer.Vector.OWMStations("Stations");
+  // Create weather layer
+  var city = new OpenLayers.Layer.Vector.OWMWeather("Weather");
 
-	// Create overlays
-	// map layer OSM
-        var mapnik = new OpenLayers.Layer.OSM();
-	// Create station layer
-	var stations = new OpenLayers.Layer.Vector.OWMStations("Stations");
-	// Create weather layer
-	var city = new OpenLayers.Layer.Vector.OWMWeather("Weather");
+  //connect layers to map
+  weathermap.addLayers([mapnik, stations, city]);
 
-	//connect layers to map
-	weathermap.addLayers([mapnik, stations, city]);
+  // Add Layer switcher
+  weathermap.addControl(new OpenLayers.Control.LayerSwitcher());
 
-	// Add Layer switcher
-	weathermap.addControl(new OpenLayers.Control.LayerSwitcher());
-
-	weathermap.setCenter( lonlat, 10 );
+  weathermap.setCenter(lonlat, 10);
 }
+ 
 
-/* http://wiki.openstreetmap.org/wiki/Mercator */
-function deg_rad(ang) {
-    return ang * (Math.PI/180.0)
-}
-function merc_x(lon) {
-    var r_major = 6378137.000;
-    return r_major * deg_rad(lon);
-}
-function merc_y(lat) {
-    if (lat > 89.5)
-        lat = 89.5;
-    if (lat < -89.5)
-        lat = -89.5;
-    var r_major = 6378137.000;
-    var r_minor = 6356752.3142;
-    var temp = r_minor / r_major;
-    var es = 1.0 - (temp * temp);
-    var eccent = Math.sqrt(es);
-    var phi = deg_rad(lat);
-    var sinphi = Math.sin(phi);
-    var con = eccent * sinphi;
-    var com = .5 * eccent;
-    con = Math.pow((1.0-con)/(1.0+con), com);
-    var ts = Math.tan(.5 * (Math.PI*0.5 - phi))/con;
-    var y = 0 - r_major * Math.log(ts);
-    return y;
-}
-function merc(x,y) {
-    return [merc_x(x),merc_y(y)];
+function merc(x, y) {
+  return [merc_x(x), merc_y(y)];
 }
