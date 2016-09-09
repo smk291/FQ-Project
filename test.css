@@ -1,4 +1,6 @@
-
+html, body{
+  overflow: hidden;
+}
 #map-canvas {
   min-width: 600x;
   width: 100vw;
@@ -7,6 +9,8 @@
   display: inline-block;
   margin: 0px;
   padding: 0px;
+  overflow: hidden;
+
 }
 
 #sidemenu, #main {
@@ -17,9 +21,19 @@
   position: absolute;
   right: .5%;
   top: 1%;
-  z-index: 9999;
+  z-index: 0;
   width: 31.5%;
-  height: 98%;
+  height: 97%;
+  background-color: white;
+}
+
+#modal-content {
+  position: absolute;
+  left: .5%;
+  top: 1%;
+  z-index: 0;
+  width: 67.5%;
+  height: 97%;
   background-color: white;
 }
 
@@ -32,16 +46,26 @@
   margin-bottom: 10px;
 }
 
-#weatherlisting{
-  overflow-y: scroll !important;
-  height: 60%;
+#weatherlisting, #hourlyForecast, #currentconditions, #dailyForecast {
+  position: absolute;
+  overflow: scroll !important;
+  height: 50%;
+  display: block;
+  border-bottom: 1px rgba(0, 0, 0, 0.3) solid;
+  font-size: 12px;
 }
 
-.alisting, .time, .probability, .precipIntensity {
-  position: relative;
-  height: 1em;
+td {
+  padding: 0px;
+  margin: -1px;
+}
+
+
+.alisting, .time, .probability, .precipIntensity, .address, p {
+  /*position: relative;
+  height: 1em;*/
   margin: 0px;
-  padding; 0px;
+  padding: 0px;
 }
 
 .flex-container {
@@ -52,10 +76,7 @@
     align-content: flex-start;
     align-items: flex-start;
 }
-
-
-
-
+/*
 .controls {
   margin-top: 10px;
   border: 1px solid transparent;
@@ -65,16 +86,18 @@
   height: 32px;
   outline: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
+}*/
 
 #pac-input, #destination, #origin {
   background-color: #fff;
   font-family: Roboto;
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 300;
   text-overflow: ellipsis;
-  width: 300px;
+  /*width: 300px;*/
   margin: 0px;
+  padding-left: 10px;
+  z-index: 1;
 }
 
 #pac-input:focus, #destination:focus, #origin:focus {
@@ -99,4 +122,87 @@
 
 #target {
   width: 345px;
+}
+
+.searchboxes {
+  /*box-shadow: 0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);*/
+  margin-top: .5%;
+  margin-left: .5%;
+}
+/*
+  div .c--anim
+  first text .c-anim*/
+
+.collection-item, li {
+  position: relative;
+}
+
+/*http://codepen.io/RichardBray/pen/julhw*/
+.alisting span {
+  position: relative;
+  color: black;
+  display: block;
+}
+
+.span2 {
+  position: absolute;
+  bottom: -100%;
+}
+
+#whether {
+  position:relative;
+  font-weight: 100;
+  font-size: 20px;
+  display: inline-block;
+  left: 0%;
+  letter-spacing: 1px;
+  color: black;
+  transition: all 10s ease-in;
+}
+
+#whether:hover {
+  color: white;
+  letter-spacing: 2em;
+}
+
+#logocontainer{
+  width: 100%;
+  text-align: center;
+  opacity: 0.0;
+  filter: gray; /* IE6-9 */
+  filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
+  -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
+  overflow:hidden;
+}
+
+#logocontainer{
+  opacity: 1.0;
+}
+
+#logocontainer>img {
+  position: absolute;
+  bottom: 90%;
+  right: 0%;
+  opacity: 0.0;
+  transition: all 15s ease-in;
+}
+
+#logocontainer>img:hover {
+  opacity: 0.6;
+}
+
+.card-panel{
+  overflow:hidden;
+}
+
+.card-panel>img{
+  bottom: 58%;
+  right: 0%;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  opacity: 0.1;
+  filter: gray; /* IE6-9 */
+  filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
+  -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
 }

@@ -1,3 +1,6 @@
+Open map on current location
+
+
 Note: start at 80; filter markers
 
 
@@ -8,9 +11,9 @@ Make temporary variable storing markers global so that I can access it
 Allow user to specify mode of transport
 
 
-1. Get distance between lat & lng and ensure it's more than a certain distance
+XX 1. Get distance between lat & lng and ensure it's more than a certain distance
 
-2. Get lat and lng:
+XX 2. Get lat and lng:
 
   google.maps.event.addListener(map, "click", function (e) {
 
@@ -20,9 +23,9 @@ Allow user to specify mode of transport
   });
 
 
-3. Use Date object == Javascript -- utc
+XX 3. Use Date object == Javascript -- utc
 
-4. moment.js == abstracts date object
+XX 4. moment.js == abstracts date object
 
 5. Style so that map not full screen
 
@@ -31,6 +34,9 @@ Allow user to specify mode of transport
 7. Animation transitions
 
 8. mdn web animation
+
+
+
 
 9. Coloring change according to weather change
 
@@ -275,3 +281,75 @@ if (clickCount === 0) { // Shitty, non-working attempt to take coordinates from 
 //     <input type="radio" name="type" id="changetype-geocode">
 //     <label for="changetype-geocode">Geocodes</label>
 //   </div>
+
+
+// function getLatLngFromClick(map) { // ----> This function gets latitude and longitude from click on map
+//   google.maps.event.addListener(map, "click", function (event) {
+//     var latLng = event.latLng;
+//     if (clickCount === 0) {
+//       $('#origin').val('');
+//       $('#origin').val(latLng.lat(arguments) + "," + latLng.lng(arguments));
+//     } else if (clickCount === 1) {
+//       $('#destination').val('');
+//       $('#destination').val(latLng.lat(arguments) + "," + latLng.lng(arguments));
+//     } else if (clickCount === 2) {
+//       alert('Bing!');
+//       clickCount = 0;
+//       initialize();
+//     }
+//
+//   });
+//   clickCount++
+// }
+
+
+// for (var i = 0; i < minutely.data.length; i++) {
+    tempArray = [];
+    // var div = document.createElement('div')
+    // div.className = 'alisting row container col l12';
+    //
+    // var p0 = document.createElement('p');
+    tempArray.push(xhrdata.minutely.data[i].time);
+    // p0.textContent = xhrdata.minutely.data[i].time;
+    // p0.className = 'time col l4';
+
+    // (div).appendChild(p0);
+
+    // var p1 = document.createElement('p1');
+    var probability = Number(xhrdata.minutely.data[i].precipProbability) * 100;
+    tempArray.push(probability + "%");
+    // p1.textContent = probability + "%";
+    // p1.className = 'probability col l4';
+
+    // var p2 = document.createElement('p');
+    tempArray.push(xhrdata.minutely.data[i].precipIntensity + ' in/hr');
+    // p2.textContent = xhrdata.minutely.data[i].precipIntensity + ' in/hr';
+    // p2.className = 'precipIntensity col l4';
+
+    // (div).appendChild(p0);
+    // (div).appendChild(p1);
+    // (div).appendChild(p2);
+    // var weatherlisting = document.getElementById('weatherlisting')
+    // weatherlisting.appendChild(div);
+    // minutelyData.push(div);
+    minutelyData.push(tempArray);
+    console.log(tempArray);
+    console.log(minutelyData);
+  // }
+  // console.log(minutelyData);
+console.log(xhrdata);
+
+unction createCanvasElemenet (skyconWidth, skyconHeight){
+  var newCanvas = document.createElement('canvas');
+  newCanvas.className = "skycon";
+  newId = "icon" + document.getElementsByClassName('skycon').length;
+  newCanvas[0].id = newId;
+  newCanvas.style.width = skyconWidth;
+  newCanvas.style.height = skyconHeight;
+  return newCanvas;
+}
+
+function createSkycon (id, skyonColor, icon){
+  var skycons = new Skycons({"color": skyconColor});
+  skycons.add(document.getElementById(id), Skycons.icon)
+}

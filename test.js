@@ -1,6 +1,5 @@
 var map;
 var directionsService;
-var clickCount = 0;
 var coordinates = [];
 var directionsCenterLatitude;
 var directionsCenterLongitude;
@@ -8,81 +7,45 @@ var latitudes = [];
 var longitudes = [];
 var directionsDistanceText = [];
 var directionsDurationText = [];
-var addresses = []
 var distanceBetweenPoints = 0;
-var markerArray = [];
 var minutelyData = [];
+var minuteContArray = [];
+var $xhrdata = {};
+var skyconCounter = 0;
+var modeOfTransport = "WALKING";
+
 
 $(function () {
+  $('.modal-trigger').leanModal({
+  dismissible: true,
+  opacity: .5,
+  in_duration: 300,
+  out_duration: 200,
+});
 
-  function initAutocomplete() {
-    // var controlDiv1 = document.createElement('div'); // This creates the first autocompete input
+  $('#searchbutton').on('click', function () {
+    event.preventDefault();
+    if (typeof coordinates[0] === 'string' && typeof coordinates[1] === 'string') {
+      initialize();
+    }
+  });
+
+  // document.getElementById('searchbutton').addEvent
+
+  function initAutocomplete() { //--> This initializes the autocomplete forms
+    ;
     var input2 = document.getElementById('origin');
-    // input2.style.placeholder = 'Origin';
-    input2.style.paddingLeft = '10px';
-    var searchBox2 = new google.maps.places.SearchBox(input2);
-    searchBox2.addListener('places_changed', function (event) {
-      // event.preventDefault();
-      coordinates[0] = searchBox2.getPlaces()[0].formatted_address;
-      // console.log(searchBox2.getPlaces());
-      console.log(searchBox2.getPlaces()[0].formatted_address);
-      if (typeof coordinates[0] === 'string' && typeof coordinates[1] === 'string') {
-            // debugger;
-            // $('#map-canvas').empty();
-        initialize();
-          // initAutocomplete();
-      }
-    })
-    // controlDiv1.style.boxShadow = '0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19)';
-    // controlDiv1.style.marginTop = '.5%';
-    // controlDiv1.style.marginLeft = '.5%';
-          // controlDiv1.appendChild(input2);
-          // map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv1);
-          // document.getElementById('search').appendChild(controlDiv1);
-
-    var controlDiv2 = document.createElement('div'); // This creates the second
     var input3 = document.getElementById('destination');
-    input3.style.paddingLeft = '10px';
-    input3.style.left = '325px';
+    var searchBox2 = new google.maps.places.SearchBox(input2);
     var searchBox3 = new google.maps.places.SearchBox(input3);
-    searchBox3.addListener('places_changed', function (event) {
-      // event.preventDefault();
-      coordinates[1] = searchBox3.getPlaces()[0].formatted_address;
-      // console.log(searchBox2.getPlaces());
-      console.log(searchBox3.getPlaces()[0].formatted_address);
-      if (typeof coordinates[0] === 'string' && typeof coordinates[1] === 'string') {
-        // debugger;
-        // $('#map-canvas').empty();
-        initialize();
-        // initAutocomplete();
-      }
-    })
-    controlDiv2.style.boxShadow = '0 12px 15px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19)';
-    controlDiv2.style.marginTop = '.5%';
-    controlDiv2.style.marginLeft = '.5%';
-    controlDiv2.style.left = '325px';
-    controlDiv2.appendChild(input3);
-    // map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv2);
-    document.getElementById('search').appendChild(controlDiv2);
-    // map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv2);
 
-    var controlDiv3 = document.createElement('div'); // This creates the search button
-    var searchButton = document.createElement('button');
-    searchButton.className = 'btn waves-effect waves-light';
-    searchButton.setAttribute('type', 'submit');
-    searchButton.setAttribute('name', 'action');
-    searchButton.style.top = '5px';
-    searchButton.id = 'searchButton';
-    var searchIcon = document.createElement('i');
-    searchIcon.className = "material-icons center";
-    searchIcon.textContent = "send";
-    searchButton.appendChild(searchIcon);
-    controlDiv3.appendChild(searchButton);
-    controlDiv3.style.marginTop = '.5%';
-    controlDiv3.style.marginLeft = '.5%';
-    controlDiv3.style.left = '650px';
-    // map.controls[google.maps.ControlPosition.TOP_LEFT].push(controlDiv3);
-    document.getElementById('search').appendChild(controlDiv3);
+    searchBox2.addListener('places_changed', function (event) {
+      coordinates[0] = searchBox2.getPlaces()[0].formatted_address; //console.log(searchBox2.getPlaces()[0].formatted_address);
+    })
+    searchBox3.addListener('places_changed', function (event) {
+      coordinates[1] = searchBox3.getPlaces()[0].formatted_address;
+
+    })
 
     searchBox2.addListener('places_changed', function () {
       var places = searchBox2.getPlaces();
@@ -92,16 +55,20 @@ $(function () {
     });
     searchBox3.addListener('places_changed', function () {
       var places = searchBox3.getPlaces();
-
       if (places.length == 0) {
         return;
       }
     });
   }
 
+  function initialize() { //  ---->  This is the function that generates map and directions
+    ;
+    $('#currentconditions').empty();
+    $('#weatherlisting').empty();
+    $('#hourlyForecast').empty();
 
-  function initialize() { //  ---->  This is the primary map and directions generating function
     var mapOptions = { // Sets initial conditions for map
+
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         center: {
           lat: 47.59916,
@@ -116,239 +83,341 @@ $(function () {
     initMap();
   }
 
-  function calcRoute() { // ----> Calculate route using user-selected addresses
+  function calcRoute() { // ----> This calculates the route using user-selected addresses
+
     var request = {
       origin: coordinates[0],
       destination: coordinates[1],
-      travelMode: google.maps.TravelMode.WALKING // >>>>>>>>>>> SET OPTION
+      travelMode: google.maps.TravelMode.WALKING //                             >>>>>>>>>>> SET OPTION
     };
 
-    // coordinates[0] = $('#origin').val();
-    // coordinates[1] = $('#destination').val();                                       // console.log(coordinates);
+    var transportChoices = document.getElementsByName('transport')
+    for (var i = 0; i < transportChoices.length; i++){
+      if (transportChoices[i].checked){
+        modeOfTransport = transportChoices[i];
+        console.log(transportChoices[i]);
+        console.log(modeOfTransport);
+        break;
+      }
+    }
+
+    // if (modeOf)
 
     directionsService.route(request, function (response, status) {
       if (status == google.maps.DirectionsStatus.OK) {
         map.fitBounds(response.routes[0].bounds);
         createPolyline(response);
       }
+      var newLatCenter = (map.getBounds().f.b + map.getBounds().f.f) / 2;
+      var newLngCenter = Math.max(map.getBounds().b.f, map.getBounds().b.b) - Math.abs((map.getBounds().b.f - map.getBounds().b.b) / 2.85);
+      map.setCenter({
+        'lat': newLatCenter,
+        'lng': newLngCenter
+      })
     });
   }
 
   function createPolyline(directionResult) { // ----> This function creates polyLines
+    ;
     latitudes = []; // Array storing list of latitudes
-    longitudes = []; // Array storing list of all longitudes -- equal in length to latitude list
+    longitudes = []; // Array storing list of all longitudes -- equal in length to latitude list // console.log(directionResult.routes[0].overview_path) // console.log(directionResult.routes)
+
     var line = new google.maps.Polyline({ // This draws lines between parts of directions; I've disabled it for now
       path: directionResult.routes[0].overview_path,
-      strokeColor: '#0000FF',
+      strokeColor: '#0000aa',
       strokeOpacity: 0.5,
       strokeWeight: 10
-    });
-
-    console.log(directionResult.routes[0])
+    }); // console.log(directionResult.routes[0])
 
     line.setMap(map);
 
     for (var i = 0; i < line.getPath().length; i++) { // Loop returns and stores latitudes and longitudes; I should filter these according to distance
-      console.log(line.getPath().getAt(i));
-      console.log(line.getPath().getAt(i).lat(arguments)); // Latitude -- difficult to figure out how to retrieve
-      latitudes.push(line.getPath().getAt(i).lat(arguments))
-      console.log(line.getPath().getAt(i).lng(arguments)); // Longitude -- difficult to figure out how to retrieve
+      latitudes.push(line.getPath().getAt(i).lat(arguments)) //  console.log(line.getPath().getAt(i).lng(arguments)); // Longitude -- difficult to figure out how to retrieve
       longitudes.push(line.getPath().getAt(i).lng(arguments))
     }
 
-    var totalDistance = 0;
-    var minuteCount = 0;
     directionsCenterLatitude = (latitudes[0] + latitudes[latitudes.length - 1]) / 2; // Store average of start latitude and end latitude
     directionsCenterLongitude = (longitudes[0] + longitudes[longitudes.length - 1]) / 2; //Store average of start longitude and end longitude
-    getForecastIO(directionsCenterLatitude, directionsCenterLongitude);
-    var distanceStorage = 0;
-    for (var i = 0; i < latitudes.length; i++) {
-      var distanceBetween = earthDistance({
-        lat: latitudes[i],
-        lon: longitudes[i]
-      }, {
-        lat: latitudes[i + 1],
-        lon: longitudes[i + 1]
-      }) * 5280;
-      if (i === latitudes.length - 1) {
-        distanceBetween = 0;
-      }
-      if ((distanceBetween + distanceStorage) > 545.6004 || i === 0 || i === latitudes.length - 1) {
-        if ((distanceBetween + distanceStorage) > 545.6004) {
-          distanceStorage = 0;
-        } else {
-          distanceStorage += distanceBetween;
-        }
-        // console.log("It's above the limit.")
-        minuteCount = Math.round(totalDistance / 545.6004) * 2;
-        console.log("MinuteCount: " + minuteCount);
-        console.log(distanceStorage);
-        totalDistance += distanceBetween;
-        console.log("TotalDistance: " + totalDistance)
-        distanceStorage = distanceStorage % 545.6004;
-        console.log("New distanceStorage is: " + distanceStorage);
-        var marker = new google.maps.Marker({ // Create marker when distanceStorage exceeds 272.80002
-          icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 3
-          },
-          position: line.getPath().getAt(i),
-          map: map
-        });
-        // weatherlisting.appendChild(minutelyData[minuteCount]);
-      } else {
-        console.log("It's below the limit");
-        distanceStorage += distanceBetween;
-        console.log("New distanceStorage is: " + distanceStorage);
-        totalDistance += distanceBetween;
-        console.log("TotalDistance: " + totalDistance)
-      }
-    }
-  }
 
-  function getLatLngFromClick(map) { // ----> This function gets latitude and longitude from click on map
-    google.maps.event.addListener(map, "click", function (event) {
-      var latLng = event.latLng;
-      if (clickCount === 0) {
-        $('#origin').val('');
-        $('#origin').val(latLng.lat(arguments) + "," + latLng.lng(arguments));
-      } else if (clickCount === 1) {
-        $('#destination').val('');
-        $('#destination').val(latLng.lat(arguments) + "," + latLng.lng(arguments));
-      } else if (clickCount === 2) {
-        alert('Bing!');
-        clickCount = 0;
-        initialize();
-      }
-
-    });
-    clickCount++
+    markersAndForecast(line, directionsCenterLatitude, directionsCenterLongitude)
   }
 
   function showSteps(directionResult, markerArray, stepDisplay, map) { // ----> Put markers on map
-    var myRoute = directionResult.routes[0].legs[0]; // // For each step, place a marker, and add the text to the marker's infowindo, attach the marker to an array so we can keep track of it and remove it when calculating new routes.
-    // console.log(myRoute);
-    // console.log(myRoute.steps);
-    for (var i = 0; i < myRoute.steps.length; i++) {
-      // console.log(myRoute.steps[i].distance.text);                               // This gets distance per 'step' as a string
-      // console.log(myRoute.steps[i].distance.value);                          // Not sure what this value is; it's connected to the distance text -- if i can figure it out, I'll save myself some work
-      // console.log(myRoute.steps[i].duration.text);                           // This gets duration per 'step' a string
-      // console.log(myRoute.steps[i].duration.value);                          // Not sure what this value is; it's connected to duration text
-      directionsDistanceText.push(myRoute.steps[i].distance.text); // Push each text value to the corresponding array
-      directionsDurationText.push(myRoute.steps[i].duration.text);
-    }
-    // console.log(directionsDistanceText);
-    // console.log(directionsDurationText);
-
-    for (var i = 0; i < myRoute.steps.length; i++) {                            // =====>>>>>>>>>>>>>>>> This puts markers on map. FILTER HERE?
-      var marker = markerArray[i] = markerArray[i] || new google.maps.Marker({
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 3
-        }
-      });
-      marker.setMap(map);
-      marker.setPosition(myRoute.steps[i].start_location);                          // Get lat and lng here
-      attachInstructionText(                                                        // =====>>>>>>>>>>>>>>>>>>>>> Instruction text is present on only SOME
-        stepDisplay, marker, myRoute.steps[i].instructions, map);                   // =====>>>>>>>>>>>>>>>>>>>>> FIX THAT
-    }
-    getLatLngFromClick(map);
+    ;
+    var myRoute = directionResult.routes[0].legs[0];
   }
 
-
   function initMap() { // ----> This function displays route
+    ;
     var directionsDisplay = new google.maps.DirectionsRenderer({ // Create a renderer for directions and bind it to the map.
       map: map
     });
-
-    var stepDisplay = new google.maps.InfoWindow; // Instantiate an info window to hold step text.
-
-    calculateAndDisplayRoute( // Display the route between the initial start and end selections.
-      directionsDisplay, directionsService, markerArray, stepDisplay, map); // Listen to change events from the start and end lists.
-    var onChangeHandler = function () {
-      calculateAndDisplayRoute(
-        directionsDisplay, directionsService, markerArray, stepDisplay, map);
-    };
-    $('button').on('click', onChangeHandler); // execute 'calculateAndDisplayRoute' when button clicked
-  } // Unused -- document.getElementById('destination').addEventListener('change', onChangeHandler);
-
-  function calculateAndDisplayRoute(directionsDisplay, directionsService, // ----> Creates array of markers -- maybe make that array global for ease
-    markerArray, stepDisplay, map) {
-    for (var i = 0; i < markerArray.length; i++) { // Remove existing markers from the map.
-      markerArray[i].setMap(null);
-      // console.log(markerArray)
-    }
-
-    directionsService.route({ // Retrieve start and end locations and create a directionsRequest using WALKING directions.
-      origin: coordinates[0],
-      destination: coordinates[1],
-      travelMode: 'WALKING' // ------->>>>>>>>>>>>>>>>>SPECIFY MODE OF TRANSPORT HERE
-    }, function (response, status) { // Cal back gets directions and sends to function to create markers for each step.
-      if (status === 'OK') { // Warning message, not used // document.getElementById('warnings-panel').innerHTML =//     '<b>' + response.routes[0].warnings + '</b>';
-        directionsDisplay.setDirections(response);
-        showSteps(response, markerArray, stepDisplay, map);
-        // console.log(markerArray);
-      }
-    });
+    var stepDisplay = new google.maps.InfoWindow;
   }
 
   function attachInstructionText(stepDisplay, marker, text, map) { // ----> Create infowindow for markers and attach instructions
-    google.maps.event.addListener(marker, 'click', function () { // Open an info window when the marker is clicked on, containing the text of the step.
-      stepDisplay.setContent(text);
-      stepDisplay.open(map, marker);
-    });
+    // google.maps.event.addListener(marker, 'click', function () { // Open an info window when the marker is clicked on, containing the text of the step.
+    //   stepDisplay.setContent(text);
+    //   stepDisplay.open(map, marker);
+    // });
   }
 
-  function getForecastIO(latitude, longitude) { // ----> API Request to forecastIO at passed coordinates, returns minute by minute forecast
-    // console.log("FORECAST.IOOOOOOOOOOOOOOOOO");
+  function markersAndForecast(line, latitude, longitude, modeOfTransport) { // ----> API Request to forecastIO at passed coordinates, returns minute by minute forecast // console.log("FORECAST.IOOOOOOOOOOOOOOOOO");
+    ;
     minutelyData = [];
     var $xhr = $.getJSON('https://crossorigin.me/https://api.forecast.io/forecast/a50acefa997f6fe98380aba1808cab6e/' + latitude + ',' + longitude)
     $xhr.done(function (xhrdata) {
-
-        var div = document.createElement('div')
-        div.className = 'alisting';
-        var hourSummary = document.createElement('p');
-        hourSummary.textContent = xhrdata.minutely.summary;
-        hourSummary.className = 'col l12';
-        (div).appendChild(hourSummary);
-        var weatherlisting = document.getElementById('weatherlisting')
-        weatherlisting.appendChild(div);
-
-        var minutely = xhrdata.minutely;
-
-        for (var i = 0; i < minutely.data.length; i++) {
-          var div = document.createElement('div')
-          div.className = 'alisting row container col l12';
-
-          var p0 = document.createElement('p');
-          p0.textContent = xhrdata.minutely.data[i].time;
-          p0.className = 'time col l4';
-
-          (div).appendChild(p0);
-
-          var p1 = document.createElement('p1');
-          var probability = Number(xhrdata.minutely.data[i].precipProbability) * 100;
-          p1.textContent = probability + "%";
-          p1.className = 'probability col l4';
-
-          var p2 = document.createElement('p');
-          p2.textContent = xhrdata.minutely.data[i].precipIntensity + 'in/hr';
-          p2.className = 'precipIntensity col l4';
-
-          (div).appendChild(p0);
-          (div).appendChild(p1);
-          (div).appendChild(p2);
-          var weatherlisting = document.getElementById('weatherlisting')
-          weatherlisting.appendChild(div);
-          minutelyData.push(div);
-        }
-        console.log(minutelyData);
-      })
-    }
+      var minutely = xhrdata.minutely;
+      createHourlyChart(xhrdata);
+      appendSummary(xhrdata);
+      whereToMark(line, xhrdata, modeOfTransport);
+      createDailyChart(xhrdata)
+    })
+  }
   initAutocomplete();
 })
 
+function whereToMark(line, xhrdata, modeOfTransport) {
+  ;
+  var totalDistance = 0;
+  var minuteCount = 0;
+  var distanceStorage = 0;
+  var distancePerMinute = 0;
+  if (modeOfTransport === "WALKING"){
+
+  } else if (distancePerMinute === "BICYCLING"){
+    distancePerMinute = 660;
+  } else {
+    distancePerMinute = 1320;
+  }
+
+    distancePerMinute = 272.8002;
+
+  var ul = document.createElement('ul');
+  ul.className = "collection";
+  ul.id = "showresults";
+
+  for (var i = 0; i < latitudes.length; i++) {
+    var distanceBetween = earthDistance({
+      lat: latitudes[i],
+      lon: longitudes[i]
+    }, {
+      lat: latitudes[i + 1],
+      lon: longitudes[i + 1]
+    }) * 5280; // console.log(distanceBetween)
+
+    if (i === latitudes.length - 1) {
+      distanceBetween = 0;
+    }
+    if ((distanceBetween + distanceStorage) > (distancePerMinute) || i === 0 || i === latitudes.length - 1) {
+      if ((distanceBetween + distanceStorage) > (distancePerMinute)) {
+        distanceStorage = 0; // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> FIX THIS WHOLE IF/ELSE
+      } else {
+        distanceStorage += distanceBetween;
+      }
+      minuteCount = Math.round(totalDistance / (distancePerMinute));
+      totalDistance += distanceBetween;
+      distanceStorage = distanceStorage % (distancePerMinute);
+
+      createMarkers(xhrdata, minuteCount, line, i)
+      fetchAndAppendData(xhrdata, minuteCount, latitudes[i], longitudes[i], ul);
+    } else {
+      distanceStorage += distanceBetween;
+      totalDistance += distanceBetween;
+    }
+  }
+  $('#weatherlisting').append(ul);
+}
+
+function createMarkers(xhrdata, minuteCount, line, i) {
+  ;
+  var marker = new google.maps.Marker({ // Create marker when distanceStorage exceeds 272.80002
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 3
+    },
+    position: line.getPath().getAt(i),
+    animation: google.maps.Animation.DROP,
+    map: map
+  });
+}
+
+function fetchAndAppendData(xhrdata, minuteCount, latitude, longitude, ul) {
+  ;
+  var li = document.createElement('li');
+  li.className = 'alisting collection-item row container col l12';
+
+  var animdiv = document.createElement('div');
+  animdiv.className = 'containingdiv';
+  var span = document.createElement('span');
+  var span2 = document.createElement('span');
+  span.className = 'span1';
+  span2.className = 'span2';
+  // var probabilityInWords = "";
+
+  var convertTime = new Date();
+  var minutes = convertTime.getMinutes() + minuteCount
+  var hours = convertTime.getHours();
+  var theTime = "";
+  if (minutes > 59) {
+    minutes = minutes - 60;
+    hours += 1;
+  }
+  if (minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  if (hours < 13) {
+    theTime = hours + ":" + minutes + " am";
+  } else {
+    theTime = hours - 12 + ":" + minutes + " pm";
+  }
+  var div1 = document.createElement('div');
+  var p1 = document.createElement('p');
+
+  p1.textContent = theTime;
+  p1.className = 'time col l3';
+  div1.appendChild(p1);
+  span.appendChild(div1);
+
+  // probabilityInWords += "At " + theTime + " ";
+
+  var probabilityArray = [];
+  var precipIntensityArray = [];
+
+
+  var div2 = document.createElement('div');
+  var p2 = document.createElement('p');
+  var probability = Number(xhrdata.minutely.data[minuteCount].precipProbability) * 100;
+  p2.textContent = probability + "%";
+  p2.className = 'probability col l1';
+  div2.appendChild(p2);
+  span.appendChild(div2);
+
+  var div3 = document.createElement('div');
+  var p3 = document.createElement('p');
+  p3.textContent = xhrdata.minutely.data[minuteCount].precipIntensity + ' in/hr';
+  var rainRate = xhrdata.minutely.data[minuteCount].precipIntensity;
+  p3.className = 'precipIntensity col l2';
+  div3.appendChild(p3);
+  span.appendChild(div3);
+
+  // if (probability === 0) {
+  //   probabilityInWords += "no precipitation expected";
+  // } else {
+  //   if (probability < 25) {
+  //     probabilityInWords += "little chance of ";
+  //   } else if (probability < 50) {
+  //     probabilityInWords += "likelihood of "
+  //   } else if (probability < 75) {
+  //     probabilityInWords += "expect";
+  //   } else {
+  //     probabilityInWords += "certainty of ";
+  //   }
+  //
+  //   if (rainRate < .2) {
+  //     probabilityInWords += "light rain ";
+  //   } else if (rainRate < .4) {
+  //     probabilityInWords += "moderate rain ";
+  //   } else if (rainRate < .6) {
+  //     probabilityInWords += "heavy rain ";
+  //   } else {
+  //     probabilityInWords += "downpours ";
+  //   }
+  // }
+  var div4 = document.createElement('div');
+  var address = "";
+  $geocode = $.getJSON('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + latitude + ',' + longitude + '&sensor=false')
+  $geocode.done(function (data) { // API call to retrieve human-readable address for lat,lng
+    var p4 = document.createElement('p');
+    p4.className = 'address col l6';
+    for (var k = 0; k < 2; k++) {
+      // console.log(data.results[0].address_components[k].short_name);
+      // probabilityInWords += " " + data.results[0].address_components[k].short_name;
+      // console.log(probabilityInWords);
+      address = data.results[0].address_components[k].short_name;
+      p4.textContent += address + " ";
+      span.appendChild(p4)
+      // span2.textContent = probabilityInWords;
+      li.appendChild(span2);
+    }
+    // probabilityInWords += " around " + p4.textContent + ".";
+    li.appendChild(span);
+  })
+
+  ul.appendChild(li);
+  // console.log(li);
+  // console.log(probabilityInWords);
+}
+
+function appendSummary(xhrdata) {
+  ;
+  var icons = new Skycons({
+    "color": "black"
+  });
+  var xhrIcon = xhrdata.currently.icon.toUpperCase().replace("-", "_");
+  console.log(xhrIcon);
+  icons.set("skycon1", Skycons[xhrIcon]);
+  icons.play();
+
+  var table1 = document.createElement('table');
+  table1.className = "highlight";
+  table1.id = "currentdata";
+  var tbody = document.createElement('tbody')
+  for (key in xhrdata.currently) {
+    var tr = document.createElement('tr');
+    var td1 = document.createElement('td');
+    td1.textContent = key;
+    td1.style.fontWeight = 500;
+    var td2 = document.createElement('td');
+    if (key === "time") {
+      var convertTime = new Date(); //>>>>>>>>>>> Hideous
+      var minutes = convertTime.getMinutes();
+      var hours = convertTime.getHours();
+      var theTime = "";
+      if (minutes > 59) {
+        minutes = minutes - 60;
+        hours += 1;
+      }
+      if (minutes < 10) {
+        minutes = "0" + minutes;
+      }
+      if (hours < 13) {
+        theTime = hours + ":" + minutes + " am";
+      } else {
+        theTime = hours - 12 + ":" + minutes + " pm";
+      }
+      td2.textContent = theTime;
+    } else if (key !== 'icon' || key !== 'ozone') {
+      td2.textContent = xhrdata.currently[key];
+    }
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    tbody.appendChild(tr);
+    table1.appendChild(tbody);
+    document.getElementById('currentconditions').appendChild(table1)
+
+  }
+  var div = document.createElement('div')
+  div.className = 'alisting';
+  var hourSummary = document.createElement('p');
+  hourSummary.textContent = xhrdata.minutely.summary;
+  hourSummary.className = 'col l12';
+  (div).appendChild(hourSummary);
+  var weatherlisting = document.getElementById('weatherlisting')
+  weatherlisting.appendChild(div);
+
+  if (hourSummary.textContent.indexOf('cloudy') !== -1) {
+
+  }
+  //
+  // var convertTime = new Date();
+  // var minutes = convertTime.getMinutes() + minuteCount
+  // var hours = convertTime.getHours();
+
+}
+
 function earthDistance(coord1, coord2) {
+  ;
   var RADIUS_OF_EARTH = 3961; // miles
   var lat1 = coord1.lat * Math.PI / 180;
   var lat2 = coord2.lat * Math.PI / 180;
@@ -364,11 +433,219 @@ function earthDistance(coord1, coord2) {
   return RADIUS_OF_EARTH * c;
 }
 
-map = new google.maps.Map(document.getElementById('map-canvas'), { // This creates the initial map
-  center: {
-    lat: 47.59916,
-    lng: -122.333689
-  },
-  disableDefaultUI: true,
-  zoom: 13
+//
+// navigator.geolocation.watchPosition(function (position) {
+//   map = new google.maps.Map(document.getElementById('map-canvas'), { // This creates the initial map
+//     center: {
+//       lat: 47.607081,
+//       lng: -122.315724
+//     },
+//     disableDefaultUI: true,
+//     zoom: 12
+//   });
+// })
+
+
+  map = new google.maps.Map(document.getElementById('map-canvas'), { // This creates the initial map
+    center: {
+      lat: 47.59916,
+      lng: -122.263689
+    },
+    disableDefaultUI: true,
+    zoom: 12
+  });
+
+$(document).ready(function () {
+  $('ul.tabs').tabs();
 });
+
+// function createCanvasElemenet (skyconWidth, skyconHeight){
+//   var newCanvas = document.createElement('canvas');
+//   newCanvas.className = "skycon";
+//   newId = "icon" + document.getElementsByClassName('skycon').length;
+//   newCanvas.id = newId;
+//   newCanvas.style.width = skyconWidth;
+//   newCanvas.style.height = skyconHeight;
+//   return newCanvas;
+// }
+//
+// function createSkycon (id, skyconColor, icon){
+//   var skycons = new Skycons({"color": skyconColor});
+//   skycons.add(document.getElementById(id), Skycons.icon)
+// }
+
+// var icons = new Skycons({"color": "black"});
+//
+// icons.set("clear-day", Skycons.CLEAR_DAY);
+// // icons.set("clear-night", Skycons.CLEAR_NIGHT);
+// // icons.set("partly-cloudy-day", Skycons.PARTLY_CLOUDY_DAY);
+// // icons.set("partly-cloudy-night", Skycons.PARTLY_CLOUDY_NIGHT);
+// // icons.set("cloudy", Skycons.CLOUDY);
+// // icons.set("rain", Skycons.RAIN);
+// // icons.set("sleet", Skycons.SLEET);
+// // icons.set("snow", Skycons.SNOW);
+// // icons.set("wind", Skycons.WIND);
+// // icons.set("fog", Skycons.FOG);
+// //
+// icons.play();
+
+// var newFigure = document.createElement('figure');
+// newFigure.className = "icons";
+// var newCanvas = document.createElement('canvas');
+// newCanvas.className = "skycon";
+// newId = "icon" + document.getElementsByClassName('skycon').length;
+// newCanvas.id = newId;
+// newCanvas.style.width = '128px';
+// newCanvas.style.height = '128px';
+// newFigure.appendChild(newCanvas);
+// document.getElementById('currentconditions').appendChild(newFigure);
+//
+// var skycons = new Skycons({"color": "pink"});
+// var skycon = xhrdata.currently.icon;
+// skycon = skycon.toUpperCase().replace("-","_");
+// console.log(skycon);
+// skycons.add(newId, Skycons.skycon);
+// skycons.play();
+
+function createHourlyChart(xhrdata) {
+  ;
+  var table1 = document.createElement('table');
+  table1.className = "highlight hourlyData";
+  var thead = document.createElement('thead');
+  var trhead = document.createElement('tr');
+  var keys = ["time", "summary", "precipProbability", "temperature", "cloudCover"]
+  var th = document.createElement('th');
+  for (var j = 0; i < keys.length; j++){
+    th.textContent = key
+    trhead.appendChild(th);
+    thead.appendChild(trhead);
+  }
+  table1.appendChild(thead);
+
+  var tbody = document.createElement('tbody');
+  for (var i = 0; i < xhrdata.hourly.data.length; i++) {
+    var tr = document.createElement('tr');
+    for (key in xhrdata.hourly.data[i]) {
+      var td = document.createElement('td');
+      if (key === "time") {
+        // console.log(moment.unix(xhrdata.hourly.data[i].time)._d);
+        td.style.fontWeight = 500;
+        td.textContent = moment.unix(xhrdata.hourly.data[i].time)._d;
+      } else if (keys.indexOf(key) !== -1) {
+        td.textContent = xhrdata.hourly.data[i][key];
+      }
+        tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table1.appendChild(tbody);
+  document.getElementById('hourlyForecast').appendChild(table1);
+}
+
+
+function createDailyChart(xhrdata) {
+  ;
+  var summaryDiv = document.createElement('div');
+  var p = document.createElement('p')
+  var table1 = document.createElement('table');
+  var thead = document.createElement('thead');
+  var trhead = document.createElement('tr');
+  var dailyForecast = document.getElementById('dailyForecast')
+
+  p.textContent = xhrdata.daily.summary;
+
+  dailyForecast.appendChild(p);
+  table1.className = "highlight dailyData";
+  // var keys = ["time", "summary", "precipProbability", "temperature", "cloudCover", "temperatureMin", "temperatureMinTime", "temperatureMax"]
+  var keys = ["time", "summary", "precipProbability", "temperature", "temperatureMin", "temperatureMax"]
+  var th = document.createElement('th');
+  for (var j = 0; i < keys.length; j++){
+    th.textContent = key
+    trhead.appendChild(th);
+    thead.appendChild(trhead);
+  }
+  table1.appendChild(thead);
+  var tbody = document.createElement('tbody');
+  for (var i = 0; i < xhrdata.daily.data.length; i++) {
+    var tr = document.createElement('tr');
+    for (key in xhrdata.daily.data[i]) {
+      var td = document.createElement('td');
+      if (key === "time") {
+        console.log(moment.unix(xhrdata.daily.data[i].time)._d);
+        td.style.fontWeight = 500;
+        td.textContent = moment.unix(xhrdata.daily.data[i].time)._d;
+      } else if (keys.indexOf(key) !== -1) {
+        td.textContent = xhrdata.daily.data[i][key];
+      }
+        tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+  table1.appendChild(tbody);
+  document.getElementById('dailyForecast').appendChild(table1);
+}
+
+
+function init(latitude, longitude) {
+  ;
+	// Center  ( mercator coordinates )
+	var lat = merc_x(longitude);
+	var lon = merc_y(latitude);
+
+// if  you use WGS 1984 coordinate you should  convert to mercator
+//	lonlat.transform(
+//		new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+//		new OpenLayers.Projection("EPSG:900913") // to Spherical Mercator Projection
+//	);
+
+	var lonlat = new OpenLayers.LonLat(lon, lat);
+
+        weathermap = new OpenLayers.Map("basicMap");
+
+	// Create overlays
+	// map layer OSM
+        var mapnik = new OpenLayers.Layer.OSM();
+	// Create station layer
+	var stations = new OpenLayers.Layer.Vector.OWMStations("Stations");
+	// Create weather layer
+	var city = new OpenLayers.Layer.Vector.OWMWeather("Weather");
+
+	//connect layers to map
+	weathermap.addLayers([mapnik, stations, city]);
+
+	// Add Layer switcher
+	weathermap.addControl(new OpenLayers.Control.LayerSwitcher());
+
+	weathermap.setCenter( lonlat, 10 );
+}
+
+/* http://wiki.openstreetmap.org/wiki/Mercator */
+function deg_rad(ang) {
+    return ang * (Math.PI/180.0)
+}
+function merc_x(lon) {
+    var r_major = 6378137.000;
+    return r_major * deg_rad(lon);
+}
+function merc_y(lat) {
+    if (lat > 89.5)
+        lat = 89.5;
+    if (lat < -89.5)
+        lat = -89.5;
+    var r_major = 6378137.000;
+    var r_minor = 6356752.3142;
+    var temp = r_minor / r_major;
+    var es = 1.0 - (temp * temp);
+    var eccent = Math.sqrt(es);
+    var phi = deg_rad(lat);
+    var sinphi = Math.sin(phi);
+    var con = eccent * sinphi;
+    var com = .5 * eccent;
+    con = Math.pow((1.0-con)/(1.0+con), com);
+    var ts = Math.tan(.5 * (Math.PI*0.5 - phi))/con;
+    var y = 0 - r_major * Math.log(ts);
+    return y;
+}
+function merc(x,y) {
+    return [merc_x(x),merc_y(y)];
+}

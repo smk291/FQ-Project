@@ -8,53 +8,120 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
   <link rel="stylesheet" href="test.css">
   <title></title>
+  <script src="Climacons/skycons.js"></script>
 </head>
 
 <body>
 
-
-  <input id="destination" class="controls" type="text" placeholder="Enter your destination">
-
-  <!-- <div id="type-selector" class="controls">
-    <input type="radio" name="type" id="changetype-all" checked="checked">
-    <label for="changetype-all">All</label>
-
-    <input type="radio" name="type" id="changetype-establishment">
-    <label for="changetype-establishment">Establishments</label>
-
-    <input type="radio" name="type" id="changetype-address">
-    <label for="changetype-address">Addresses</label>
-
-    <input type="radio" name="type" id="changetype-geocode">
-    <label for="changetype-geocode">Geocodes</label>
-  </div> -->
-
   <div id="map-canvas"></div>
 
+  <div class="container row" id="welcome">
+
+    <div class="col l12" id="title"></div>
+    <div class="col l4 infos" id="info1"></div>
+    <div class="col l4 infos" id="info2"></div>
+    <div class="col l4 infos" id="info3"></div>
+  </div>
+
   <div id="side-menu" class="container row z-depth-3">
-    <div class="col l12">
-      <div class="row">
-        <form class="col l12">
-          <div class="row">
-            <div id="col l5">
-              <input id="origin" class="controls" type="text" placeholder="Enter your origin">
-            </div>
-          <div class="col l2" id="buttonholder" class="flex-container">
-            <div id="search">
-            </div>
-          </div>
-          </div>
-        </form>
+    <div id="logocontainer" class="col l12">
+      <div id="whether">WHETHER</div><img id="therain" src="fJ1fizf.gif" /></div>
+    <div class="row">
+      <div class="col s12">
+        <ul class="tabs">
+          <li class="tab col s2"><a href="#welcome">Welcome</a></li>
+          <li class="tab col s3"><a href="#trip">Plan a Trip</a></li>
+          <li class="tab col s2"><a href="#currently">Currently</a></li>
+          <li class="tab col s3"><a href="#hourly">Three-Day</a></li>
+          <li class="tab col s2"><a href="#daily">Seven-Day</a></li>
+        </ul>
       </div>
-    </div>
-    <div class="col l12 row container" id="weatherlisting">
+
+      <!--first tab-->
+      <div id="welcome" class="col s12">
+
+            <div class="card-panel hoverable blue-grey darken-1">
+              <div class="card-content white-text">
+                <span class="card-title">Hi.</span>
+                <p>This website combines trip-planning and granular weather forecasting, making it possible to determine not just what the whether will be but where users will likely be when it changes.</p>
+                <br>
+                <p>The webapp is powered by a combiation of forecast.io and various Google maps apis, and (eventually) charts.js and weatherunderground's map overlays.</p>
+                <br>
+                <p>Started by clicking the "Plan a trip" tab above, and then enter your origin and destination. The app will plot your course, mark your likely progress as time passes, and tell you what the weather will be
+              </div>
+              <img id="therain2" src="fJ1fizf.gif" />
+            </div>
+          </div>
+      <div id="trip" class="col s12">
+        <div class="row">
+          <form class="col l12">
+            <div class="row" id="searchcomplex">
+              <div class="searchboxes col l5">
+                <input id="origin" class="controls" type="text" placeholder="Enter your origin" autofocus>
+              </div>
+              <div class="searchboxes col l5">
+                <input id="destination" class="controls" type="text" placeholder="Enter your destination">
+              </div>
+              <div class="col l2" id="buttonholder" class="flex-container">
+                <div>
+                  <button class='btn-flat waves-effect waves-light' type='submit' name='action' id='searchbutton'>
+                    <i class="material-icons center">send</i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="col l12">
+              <div id="meansOfTransport">
+                <span>
+                  <input name="transport" type="radio" name="transport" id="WALKING" checked="checked" />
+                  <label for="walking">Walking</label>
+                </span>
+                <span>
+                  <input type="radio" name="transport" id="BICYCLING" />
+                  <label for="bicycling">Bicycling</label>
+                </span>
+                <span>
+                  <input type="radio" name="transport" id="DRIVING" />
+                  <label for="driving">Driving</label>
+                </span>
+              </div>
+            </div>
+        </div>
+        </form>
+        <div class="col l12" id="weatherlisting">
+        </div>
+      </div>
+
+      <!--second tab-->
+      <div id="currently" class="col s12 row">
+        <figure class="icons">
+          <canvas id="skycon1" width="96" height="96"></canvas>
+        </figure>
+        <div class="col l12" id='currentconditions'></div>
+      </div>
+
+      <!--third tab-->
+      <div id="hourly" class="col s12 row">
+        <div id="hourlyForecast" class="col l12"></div>
+      </div>
+
+      <!--fourth tab-->
+      <div id="daily" class="col l12 row">
+        <div class="col l12" id="dailyForecast"></div>
+      </div>
+
     </div>
   </div>
 
+  <script src="https://rawgithub.com/darkskyapp/skycons/master/skycons.js"></script>
+  <script src="moment.js"></script>
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAjLzjdU4yR3wLHAupDzHJZTAjNdX8bZtU&libraries=geometry,places,drawing,visualization"></script>
   <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+  <script src="http://openlayers.org/api/OpenLayers.js"></script>
+  <script src="http://openweathermap.org/js/OWM.OpenLayers.1.3.4.js"></script>
+  <script src="Chart.bundle.js"></script>
   <script src="test.js"></script>
 </body>
 
