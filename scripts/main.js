@@ -129,7 +129,7 @@ $(function () {
 
   function markersAndForecast(line, centerLatitude, centerLongitude, modeOfTransport, latitudes, longitudes, map) { // ----> API Request to forecastIO at passed coordinates
 
-    let $xhr = $.getJSON('https://crossorigin.me/https://api.forecast.io/forecast/a50acefa997f6fe98380aba1808cab6e/' + centerLatitude + ',' + centerLongitude);
+    let $xhr = $.getJSON('https://crossorigin.me/https://api.forecast.io/forecast//' + centerLatitude + ',' + centerLongitude);
     $xhr.done(function (xhrdata) {
       createHourlyChart(xhrdata);
       appendSummary(xhrdata);
